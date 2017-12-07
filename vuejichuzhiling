@@ -61,7 +61,7 @@ App.vue
 		 	 *v-if          *v-show
 		 	 *v-for         *v-bind 结合class使用
 		 	 *v-on    *v-model
-		 </pre>
+		 </pre> 
 		   *v-text:只能在双标签中使用
 		   <br />
 		   <span v-text="text"></span>
