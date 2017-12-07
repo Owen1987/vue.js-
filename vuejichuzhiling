@@ -25,8 +25,8 @@ import Vue from 'vue'
 //2.引入App.vue用他的内容来替换 div  id = app
 import App from './App'
 
-import router from './router'
-Vue.config.productionTip = false
+//import router from './router'
+//Vue.config.productionTip = false
 
 /* eslint-disable no-new */
 //3.构建实例（总结：一般来说key是固定的，值是自己设置的（可变））
