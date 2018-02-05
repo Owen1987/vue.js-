@@ -1,0 +1,63 @@
+
+1.以手机为例的一个demo
+// 这是组件的代码
+<el-form  ref="ruleForm" :model="ruleForm" :rules="ruleForm">
+    <el-form-item prop="mobile">
+        <el-input type="text" v-model="ruleForm.mobile" auto-complete="off" placeholder="请输入手机号"></el-input>
+    </el-form-item>
+</el-form>
+// 这是rules的代码blur，你会很容易看到除了blur 还有focus、input等触发
+data(){
+return{
+      mobile: [
+          { validator: validateMobile, trigger: 'blur' },
+          { required: true, message: '请输入手机号', trigger: 'blur' },
+          { pattern: /^1[34578]\d{9}$/, message: '目前只支持中国大陆的手机号码' }
+      ],
+    }
+}
+
+
+2.需要后台比对验证的demo，自定义验证规则（适用较复杂的项目）
+// 注意validatePass是属于data的，但不在return中。
+data () {
+let validatePass = (rule, value, callback) => {
+    if (value.length >= 8) {
+                let params = {//需要传入与后台比对的参数
+                    'account': value
+                }
+                axios.post('localhost:8080/verifyUserAccount', params)
+                .then(function (response) {
+                    if (response.data.err) {
+                        callback(response.data.msg)
+                    } else {
+                        callback()
+                    }
+                })
+                .catch(function () {
+                    callback(new Error('服务异常'))
+                })
+            } else {
+                callback()
+            }
+}
+
+//这是验证规则，当然了你也可以同时使用基本的验证规则
+account: [
+    { validator: validatePass , trigger: 'blur' },
+    {},//验证规则2
+    {},//验证规则3
+]
+
+综合：
+通常可以把所有规则都写在自定义的规则中，即可实现较为复杂的验证，实际上我们可以再validatePass里面调用根实例下所有data methods...，一个很简单的例子是实现两次输入的密码是否相同的验证，看下面的代码：
+
+let validatePass = (rule, value, callback) => {
+            if (value === '') {
+                callback(new Error('请再次输入密码'))
+            } else if (value !== this.ruleForm.password) {//调用了根实例的data
+                callback(new Error('两次输入密码不一致!'))
+            } else {
+                callback()
+            }
+        }
