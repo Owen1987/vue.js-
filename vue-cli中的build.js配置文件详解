@@ -1,3 +1,5 @@
+ 参阅http://www.cnblogs.com/wulinzi/p/8066236.html
+
 这是vue-cli脚手架工具的生产环境配置入口 package.json中的"build": "node build/build.js"的直接指向。
 //版本检查 node的版本号  版本有要求"engines": {"node": ">= 4.0.0","npm": ">= 3.0.0"}
 //立即执行
