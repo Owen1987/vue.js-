@@ -1,0 +1,119 @@
+https://blog.csdn.net/w1170375057/article/details/78474932?locationNum=10&fps=1
+一：整体
+axios使用拦截器---在请求或响应被then或catch处理前拦截它们
+   // 1.添加请求拦截器
+axios.interceptors.request.use(function(config)){
+   //在发送请求之前做些什么
+   return config;
+},function(error){
+   //对请求错误做些什么
+   return Promise.reject(error);
+});
+
+//2.添加响应拦截器
+axios.interceptors.response.use(function(){
+  //对响应数据做点什么
+  return response;
+},function(error){
+  //对响应错误做点什么
+  return Promise.reject(error);
+  });
+  
+ //3.移除拦截器
+  var myInterceptor = axios.interceptors.request.use(function(){});
+  axios.interceptors.request.eject(myInterceptor);
+ //4.为自定义axios实例添加拦截器
+var instance = axios.create();
+instance.interceptors.request.use(function () {/*...*/});
+二。使用https://blog.csdn.net/panyox/article/details/73800241
+axios全局请求参数设置，请求以及返回拦截器
+  应用场景：
+   1.每个请求都带上参数，比如token，时间戳等
+   2.对返回的状态进行判断，比如token是否过期
+         axios.interceptors.request.use(
+          config => {
+            var xtoken = getXtoken()
+            if(xtoken != null){
+              config.headers['X-Token'] = xtoken
+            }
+            if(config.method=='post'){
+              config.data = {
+                ...config.data,
+                _t: Date.parse(new Date())/1000,
+              }
+            }else if(config.method=='get'){
+              config.params = {
+                _t: Date.parse(new Date())/1000,
+                ...config.params
+              }
+            }
+            return config
+          },function(error){
+            return Promise.reject(error)
+          }
+        )
+      axios.interceptors.response.use(function (response) {
+        // token 已过期，重定向到登录页面
+        if (response.data.code == 4){
+          localStorage.clear()
+          router.replace({
+                              path: '/signin',
+                              query: {redirect: router.currentRoute.fullPath}
+                          })
+        }
+        return response
+      }, function (error) {
+        // Do something with response error
+        return Promise.reject(error)
+      })
+      
+     三，案例
+     import 'es6-promise'
+     import axios from 'axios'
+     import store from '../store/index'
+     import {loadToken} form './aythToken'
+     const service =axios.create({
+        baseURL:process.env.BASE_URL,//api的base_url
+        timeout:5000,//request timeout
+      })
+      //http请求拦截器
+      service.interceptors.request.use(config=>{
+        if(store.getters.token){
+          config.headers['Authorization'] = 'JWT'+loadToken()
+        }
+        return config
+      },error=>{
+        return Promise.reject(error)
+      })
+      //http 响应拦截器
+      service.interceptors.response.use(response=>{
+              const res=response.data
+              if(res.status===0&&(res.errCode===401||res.errCode===403)){
+                store.dispatch('setLoginStatus',0)
+                //重新登入
+                window.location.reload()
+              }
+              return res
+             },error=>{
+               return Promise.reject(error)
+          })
+          //请求已经封装在request
+          import request from '../utils/request'
+          export default class EventServer{
+          //获取活动列表
+          static getEventList(params){
+           let url = '/events/'
+           return request({
+            url:url,
+            method:'get',
+            params:params,
+           })
+           }
+           //获得活动详情/events/{event_uuid}
+           static getEventDetail(event uuid){
+                let url = `/events/${event uuid}`
+                return request({
+                  url:url,
+                 method:'get',
+              }
+          }
