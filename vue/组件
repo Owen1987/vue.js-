@@ -1,0 +1,236 @@
+父子组件
+
+一.全局组件
+index.html:
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>vueproject</title>
+  </head>
+  <body>
+  	<!--留坑-->
+    <div id="app"></div>
+    <!-- built files will be auto injected -->
+  </body>
+</html>
+2.main.js
+import Vue from 'vue'
+import App from './App'
+//引入组件作为全局组件 ，使用更为方便，不需要声明，直接用vue.component('组件名'，组件对象)
+ import  headerVue from "./components/header"
+ import   bodyVue from "./components/body"
+ import  footerVue from "./components/footer"
+ 
+ //声明全局组件
+ Vue.component('headerVue', headerVue);
+ Vue.component('bodyVue', bodyVue);
+ Vue.component('footerVue', footerVue);
+ 
+new Vue({
+el: '#app',
+//全局组件时用
+render:c=>c(App)
+})
+3.App.vue
+<!--App.vue组件使用头组件，使用中组件，使用底组件   -->
+<!-- 谁用谁就是 父组件； 谁被用谁就是子 组件-->
+<template>
+	<div>
+    <header-vue  param1="大大"></header-vue>
+    <body-Vue :param2="param22"></body-Vue>
+    <footer-Vue></footer-Vue>
+       </div>
+</template>
+
+<script>
+export default {
+   data(){
+   	return{
+   		param22:'我是param22哈哈'
+   	}
+   },
+   methods:{},
+ 
+   
+}
+</script>
+<style>
+  
+</style>
+4.子组件
+ header.vue： ------接收父组件的常量
+ <template>
+	<div>
+				我是{{param1}}头部
+	</div>
+</template>
+<script >
+	export default{
+		data(){
+			return{
+				
+			}
+		},
+		methods:{
+			
+		},
+		//声明根属性props，接收父组件的常量值
+		props:['param1']
+	}
+</script>
+<style scoped>
+	div{
+		background-color: green;
+		height:200px;
+	}
+</style>
+body.vue：---接收父组件的变量值
+<template>
+	<div>
+		
+		我是中间部,接收父组件的变量值{{param2}}
+	</div>
+</template>
+<script >
+	export default{
+		data(){
+			return{
+				
+			}
+		},
+		methods:{
+			
+		},
+		//声明根属性props，接收父组件的值
+		props:['param2']
+	}
+</script>
+<style scoped>
+	div{
+		background-color: royalblue;
+		height:200px;
+	}
+</style>
+二：父子组件（局部）
+1.index.html
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>vueproject</title>
+  </head>
+  <body>
+  	<!--留坑-->
+    <div id="app"></div>
+    <!-- built files will be auto injected -->
+  </body>
+</html>
+2.main.js:
+import Vue from 'vue'
+import App from './App'
+new Vue({//父子组件时用
+el: '#app',
+template: '<App/>',
+components: { App }
+})
+3.App.vue
+<!--App.vue组件使用头组件，使用中组件，使用底组件   -->
+<!-- 谁用谁就是 父组件； 谁被用谁就是子 组件-->
+<template>
+	<div>
+    <header-vue  param1="大大"></header-vue>
+    <body-Vue :param2="param22"></body-Vue>
+    <footer-Vue></footer-Vue>
+    
+   </div>
+</template>
+
+<script>
+//父子组件使用，使用的是父，被用的是子，在main.js里面为全局
+//父需要声明子组件，引入子组件对象 import  子组件对象  from "./xxx.vue";
+ import  headerVue from "./components/header"
+ import   bodyVue from "./components/body"
+import  footerVue from "./components/footer"
+export default {
+   data(){
+   	return{
+   		param22:'我是param22哈哈'
+   	}
+   },
+   methods:{},
+   //父子组件使用必须声明
+ components:{
+ 	 //组件名(自己定义，在模板中使用) : 组件对象(import 后面的那个值)
+	 headerVue:headerVue,
+	 bodyVue,
+	 footerVue,
+ }
+   
+}
+</script>
+<style>
+  
+</style>
+4.子组件
+header.vue：
+<template>
+	<div>
+		
+		我是{{param1}}头部
+	</div>
+</template>
+<script >
+	export default{
+		data(){
+			return{
+				
+			}
+		},
+		methods:{
+			
+		},
+		//接收父组件的值，在页面中{{param1}}
+		props:['param1']
+	}
+</script>
+<style scoped>
+	div{
+		background-color: green;
+		height:200px;
+	}
+</style>
+body.vue：
+<template>
+	<div>
+		
+		我是中间部,接收父组件的值{{param2}}
+    <button @click="show"> 从js中获取父组件值</button>
+	</div>
+</template>
+<script >
+	export default{
+		data(){
+			return{
+				
+			}
+		},
+		methods:{
+			show(){
+      alert(this.param2)
+      }
+		},
+		//接收父组件的值再页面中世界使用{{param2}} ，在js中 使用this.param2
+		props:['param2']
+	}
+</script>
+<style scoped>
+	div{
+		background-color: royalblue;
+		height:200px;
+	}
+</style>
+
+
