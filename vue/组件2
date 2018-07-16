@@ -1,0 +1,195 @@
+父组件使用 prop 传递数据给子组件 props[] 或者props:{}
+   props 接收常量  也接受变量、对象（动态prop）
+ 1.props 接收常量 ：
+Vue.component('child', {
+  // 在 JavaScript 中使用 camelCase (驼峰式命名)
+  props: ['myMessage'],
+  template: '<span>{{ myMessage }}</span>'
+})
+<!-- 在 HTML 中使用 kebab-case (短横线分隔式命名) -->
+<child my-message="hello!"></child>----这个是接收常量，不使用v-bind
+2.接收变量：----------使用v-bind：接收变量
+<div>
+  <input v-model="parentMsg">
+  <br>
+  <child v-bind:my-message="parentMsg"></child>
+</div>
+<child :my-message="parentMsg"></child>
+2.1.接收对象
+todo: {
+  text: 'Learn Vue',
+  isComplete: false
+}
+<todo-item v-bind="todo"></todo-item>
+等价于：绑定对象中那几个属性
+<todo-item
+  v-bind:text="todo.text"
+  v-bind:is-complete="todo.isComplete"
+></todo-item>
+注意陷阱： 传递数字
+<!-- 传递了一个字符串 "1" -->
+<comp some-prop="1"></comp>
+<!-- 传递真正的数值 -->
+<comp v-bind:some-prop="1"></comp>
+每次父组件更新时，子组件的所有 prop 都会更新为最新值，子组件不影响父组件，但是 注意
+如果 prop 是一个对象或数组，在子组件内部改变它会影响父组件的状态。
+注意2.一般不修改子组件prop的数据
+在两种情况下，我们很容易忍不住想去修改 prop 中数据：
+Prop 作为初始值传入后，子组件想把它当作局部数据来用；
+  处理：定义一个局部变量，并用 prop 的值初始化它：
+  props: ['initialCounter'],
+data: function () {
+  return { counter: this.initialCounter }
+}
+Prop 作为原始数据传入，由子组件处理成其它数据输出。
+处理：定义一个计算属性，处理 prop 的值并返回：
+props: ['size'],
+computed: {
+  normalizedSize: function () {
+    return this.size.trim().toLowerCase()
+  }
+}
+3.验证时候props使用对象形式
+Vue.component('example', {
+  props: {
+    // 基础类型检测 (`null` 指允许任何类型)
+    propA: Number,
+    // 可能是多种类型
+    propB: [String, Number],
+    // 必传且是字符串
+    propC: {
+      type: String,
+      required: true
+    },
+    // 数值且有默认值
+    propD: {
+      type: Number,
+      default: 100
+    },
+    // 数组/对象的默认值应当由一个工厂函数返回
+    propE: {
+      type: Object,
+      default: function () {
+        return { message: 'hello' }
+      }
+    },
+    // 自定义验证函数
+    propF: {
+      validator: function (value) {
+        return value > 10
+      }
+    }
+  }
+})
+二：非prop特性
+所谓非 prop 特性，就是指它可以直接传入组件，而不需要定义相应的 prop。
+1.组件可以接收任意传入的特性，这些特性都会被添加到组件的根元素上。
+ 如 <bs-date-input data-3d-date-picker="true"></bs-date-input>添加属性 data-3d-date-picker="true" 之后，它会被自动添加到 bs-date-input 的根元素上。
+2.替换/合并现有的特性：--class和style会合并， 当时type等父组件会替换子组件
+<input type="date" class="form-control">--模板
+<bs-date-input
+  data-3d-date-picker="true"
+  class="date-picker-theme-dark"
+></bs-date-input>
+在这个例子当中，我们定义了两个不同的 class 值：
+form-control，来自组件自身的模板
+date-picker-theme-dark，来自父组件
+
+综合案例：
+1.main.js:
+import Vue from 'vue'
+import App from './App'
+import subVue from './components/sub'
+Vue.component('subVue',subVue)
+new Vue({
+el: '#app',
+//全局组件时用
+render:c=>c(App)
+})
+
+2.App.vue:父组件在这里面
+<template>
+	<div>
+      <p>群消息girl：</p>
+     <div>{{somebody}}说：我{{age}}了</div>
+     <sub-vue :girls="aGirls" :noticeGirl="noticeGirl"  @introduce="introduceSelf"></sub-vue>
+      <!--给子组件传递 两变量 aGirls   noticeGirl ，以及通过v-on：事件名（introduce）监听子组件-->
+   </div>
+</template>
+<script>
+export default {
+   data(){
+   	return{
+   	 aGirls:[{
+                name:'小丽',
+                age:22
+            },{
+                name:'小美',
+                age:21
+            },{
+                name:'小荷',
+                age:24
+            }],
+            somebody:'',
+            age:'',
+            noticeGirl:''
+   	}
+   },
+   methods:{
+   	 introduceSelf(opt){
+   	 	this.somebody = opt.name;
+   	 	this.age = opt.age;
+   	 	
+   	 	// 通知girl收到消息
+        this.noticeGirl = opt.name + ',已收到消息';
+   	 }
+  	}
+    }
+ <style>
+</style>
+3.sub.vue:子组件
+<template>
+	<div>
+		<ul>
+           <li v-for="(value, index) in girls">
+                {{ index }} - {{ value.name }} - {{ value.age }} 
+                <button @click="noticeGroup(value.name,value.age)">发送消息</button>
+            </li> 
+       </ul>
+       <div>接收来自父大群的消息:{{ noticeGirl }}</div>
+	</div>
+</template>
+<script >
+
+	export default{
+		data(){
+			return{}
+		},
+		methods:{
+			noticeGroup (name, age) {
+                //子组件通过this.$emit(事件名（introduce）)
+	           	this.$emit('introduce',{
+	                name: name,
+	                age: age
+	            })
+			}
+		},
+		//接收父组件的消息，带有验证的props:{}
+		 props: {
+	        girls: {
+	            type: Array,
+	            required: true
+	        },
+	        noticeGirl: {
+            type: String,
+            required: false
+        	}
+    	},
+	}
+</script>
+<style>
+	div{
+		background-color: green;
+		height: 100px;
+	}
+</style>
